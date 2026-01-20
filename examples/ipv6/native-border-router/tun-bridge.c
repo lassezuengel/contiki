@@ -251,6 +251,11 @@ init(void)
 static int
 output(void)
 {
+  /* Log the destination address of the packet being sent to the fallback interface */
+  printf("TUN fallback output for destination: ");
+  uip_debug_ipaddr_print(&UIP_IP_BUF->destipaddr);
+  printf("\n");
+
   PRINTF("SUT: %u\n", uip_len);
   if(uip_len > 0) {
     return tun_output(&uip_buf[UIP_LLH_LEN], uip_len);
