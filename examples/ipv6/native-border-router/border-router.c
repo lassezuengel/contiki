@@ -295,6 +295,11 @@ set_prefix_64(const uip_ipaddr_t *prefix_64)
   memcpy(&prefix, prefix_64, 16);
   memcpy(&ipaddr, prefix_64, 16);
 
+  /* Manually add prefix to the DS6 prefix list for on-link determination */
+  if(uip_ds6_prefix_add(&prefix, 64, 0) == NULL) {
+    PRINTF("ERROR: Failed to add prefix to ds6 list\n");
+  }
+
   prefix_set = 1;
   uip_ds6_set_addr_iid(&ipaddr, &uip_lladdr);
   uip_ds6_addr_add(&ipaddr, 0, ADDR_AUTOCONF);
