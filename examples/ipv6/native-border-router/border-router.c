@@ -353,6 +353,7 @@ PROCESS_THREAD(border_router_process, ev, data)
     printf("\n--- CURRENT ROUTING STATE ---\n");
 
     printf("Prefixes:\n");
+    /* Corrected: uip_ds6_prefix_list is an array, not a function */
     for(p = uip_ds6_prefix_list; p < uip_ds6_prefix_list + UIP_DS6_PREFIX_NB; p++) {
       if(p->isused) {
         printf("  - ");
@@ -362,7 +363,8 @@ PROCESS_THREAD(border_router_process, ev, data)
     }
 
     printf("Neighbors:\n");
-    for(nbr = uip_ds6_nbr_head(); nbr != NULL; nbr = uip_ds6_nbr_next(nbr)) {
+    /* Corrected: Use the nbr_table API as shown in the webserver code */
+    for(nbr = nbr_table_head(ds6_neighbors); nbr != NULL; nbr = nbr_table_next(ds6_neighbors, nbr)) {
         printf("  - ");
         uip_debug_ipaddr_print(&nbr->ipaddr);
         printf(" (state: %d)\n", nbr->state);
