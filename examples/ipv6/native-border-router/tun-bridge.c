@@ -225,7 +225,7 @@ tun_init()
 static int
 tun_output(uint8_t *data, int len)
 {
-  /* fprintf(stderr, "*** Writing to tun...%d\n", len); */
+  fprintf(stderr, "*** Writing to tun...%d\n", len);
   if(write(tunfd, data, len) != len) {
     err(1, "serial_to_tun: write");
     return -1;
@@ -251,9 +251,18 @@ init(void)
 static int
 output(void)
 {
-  /* Log the destination address of the packet being sent to the fallback interface */
+  /* Log the destination address by printing the raw bytes at the known offset */
+  /* in the IPv6 header. This avoids dependencies on internal uIP structs. */
   printf("TUN fallback output for destination: ");
-  uip_debug_ipaddr_print(&UIP_IP_BUF->destipaddr);
+  int i;
+  /* The destination address is at offset 24 in the IPv6 header. */
+  uint8_t *dest_addr_ptr = &uip_buf[UIP_LLH_LEN + 24];
+  for(i = 0; i < 16; i += 2) {
+    printf("%02x%02x", dest_addr_ptr[i], dest_addr_ptr[i+1]);
+    if (i < 14) {
+      printf(":");
+    }
+  }
   printf("\n");
 
   PRINTF("SUT: %u\n", uip_len);
@@ -295,7 +304,7 @@ handle_fd(fd_set *rset, fd_set *wset)
     if(dmsec>delaymsec) delaymsec=0;
   }
 
-  if(delaymsec==0) {
+  if(1==1 || delaymsec==0) {
     int size;
 
     if(FD_ISSET(tunfd, rset)) {
