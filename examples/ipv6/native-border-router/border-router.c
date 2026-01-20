@@ -342,6 +342,30 @@ PROCESS_THREAD(border_router_process, ev, data)
     }
   }
 
+  /*******************************************************************/
+  /* Hard-code a static route and neighbor for the client node       */
+  /* This is a workaround for failing auto-discovery                 */
+  /*******************************************************************/
+  uip_ipaddr_t client_ipaddr;
+  /* IMPORTANT: Replace this with the actual 8-byte address of your nrf52 client. */
+  const uip_lladdr_t client_lladdr = {{0x00, 0x12, 0x34, 0x56, 0x78, 0x9a, 0xbc, 0xde}};
+
+  /* Set the client's IPv6 address */
+  uiplib_ipaddrconv("fd01::1234", &client_ipaddr);
+
+  /* Add a static neighbor entry (IP -> Link-Layer Address mapping). */
+  /* We use NBR_TABLE_REASON_UNDEFINED as a safe generic reason for this static entry. */
+  uip_ds6_nbr_t *nbr = uip_ds6_nbr_add(&client_ipaddr, &client_lladdr, 0, NBR_REACHABLE, NBR_TABLE_REASON_UNDEFINED, NULL);
+  if(nbr) {
+    printf("WORKAROUND: Added static neighbor entry for fd01::1234\n");
+  }
+
+  /* Add a static route for the client (for /128) */
+  if(uip_ds6_route_add(&client_ipaddr, 128, &client_ipaddr) != NULL) {
+    printf("WORKAROUND: Added static route for fd01::1234\n");
+  }
+  /*******************************************************************/
+
 #if DEBUG
   print_local_addresses();
 #endif
