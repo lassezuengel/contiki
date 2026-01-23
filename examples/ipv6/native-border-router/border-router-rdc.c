@@ -153,6 +153,7 @@ send_list(mac_callback_t sent, void *ptr, struct rdc_buf_list *buf_list)
 static void
 packet_input(void)
 {
+  // Handles an incoming packet from slip
   printf("br-rdc: packet_input len %u\n", packetbuf_datalen());
   if(NETSTACK_FRAMER.parse() < 0) {
     PRINTF("br-rdc: failed to parse %u\n", packetbuf_datalen());

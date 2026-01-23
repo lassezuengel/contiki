@@ -54,7 +54,7 @@
 
 #include <string.h>
 
-#define DEBUG DEBUG_NONE
+#define DEBUG DEBUG_ALL
 #include "net/ip/uip-debug.h"
 
 #if UIP_LOGGING
@@ -190,6 +190,8 @@ check_for_tcp_syn(void)
 static void
 packet_input(void)
 {
+  printf("tcpip: packet_input\n");
+
   if(uip_len > 0) {
 
 #if UIP_CONF_IP_FORWARD
@@ -694,7 +696,7 @@ tcpip_ipv6_output(void)
 #else /* UIP_ND6_SEND_NS */
       PRINTF("tcpip_ipv6_output: neighbor not in cache\n");
       uip_len = 0;
-      return;  
+      return;
 #endif /* UIP_ND6_SEND_NS */
     } else {
 #if UIP_ND6_SEND_NS
