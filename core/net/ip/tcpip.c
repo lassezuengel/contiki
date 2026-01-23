@@ -207,12 +207,14 @@ packet_input(void)
     uip_input();
     if(uip_len > 0) {
 #if UIP_CONF_TCP_SPLIT
+      printf("tcpip: calling uip_split_output()\n");
       uip_split_output();
 #else /* UIP_CONF_TCP_SPLIT */
 #if NETSTACK_CONF_WITH_IPV6
+      printf("tcpip: calling tcpip_ipv6_output()\n");
       tcpip_ipv6_output();
 #else /* NETSTACK_CONF_WITH_IPV6 */
-      PRINTF("tcpip packet_input output len %d\n", uip_len);
+      printf("tcpip: calling tcpip_output() with packet_input output len %d\n", uip_len);
       tcpip_output();
 #endif /* NETSTACK_CONF_WITH_IPV6 */
 #endif /* UIP_CONF_TCP_SPLIT */
