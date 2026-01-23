@@ -236,6 +236,7 @@ print_local_addresses(void)
 static void
 request_mac(void)
 {
+  printf("Requesting MAC address from slip-radio\n");
   write_to_slip((uint8_t *)"?M", 2);
 }
 /*---------------------------------------------------------------------------*/
@@ -347,9 +348,9 @@ PROCESS_THREAD(border_router_process, ev, data)
     }
   }
 
-  /*******************************************************************/
-  /* DEBUG: Print internal routing state after initialization        */
-  /*******************************************************************/
+  /************************************************************/
+  /* DEBUG: Print internal routing state after initialization */
+  /************************************************************/
   {
     uip_ds6_prefix_t *p;
     uip_ds6_nbr_t *nbr;

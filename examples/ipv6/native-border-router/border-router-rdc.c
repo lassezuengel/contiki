@@ -134,6 +134,8 @@ send_packet(mac_callback_t sent, void *ptr)
       /* Copy packet data */
       memcpy(&buf[3 + size], packetbuf_hdrptr(), packetbuf_totlen());
 
+      printf("br-rdc: slipping packet len %u (sid %u)\n",
+             packetbuf_totlen() + size, sid);
       write_to_slip(buf, packetbuf_totlen() + size + 3);
     }
   }
@@ -151,6 +153,7 @@ send_list(mac_callback_t sent, void *ptr, struct rdc_buf_list *buf_list)
 static void
 packet_input(void)
 {
+  printf("br-rdc: packet_input len %u\n", packetbuf_datalen());
   if(NETSTACK_FRAMER.parse() < 0) {
     PRINTF("br-rdc: failed to parse %u\n", packetbuf_datalen());
   } else {
@@ -161,12 +164,14 @@ packet_input(void)
 static int
 on(void)
 {
+  printf("br-rdc: on\n");
   return 1;
 }
 /*---------------------------------------------------------------------------*/
 static int
 off(int keep_radio_on)
 {
+  printf("br-rdc: off\n");
   return 1;
 }
 /*---------------------------------------------------------------------------*/

@@ -51,7 +51,7 @@
 #include <sys/socket.h>
 
 
-#define DEBUG DEBUG_NONE
+#define DEBUG DEBUG_FULL
 #include "net/ip/uip-debug.h"
 
 #ifdef linux
@@ -251,11 +251,8 @@ init(void)
 static int
 output(void)
 {
-  /* Log the destination address by printing the raw bytes at the known offset */
-  /* in the IPv6 header. This avoids dependencies on internal uIP structs. */
   printf("TUN fallback output for destination: ");
   int i;
-  /* The destination address is at offset 24 in the IPv6 header. */
   uint8_t *dest_addr_ptr = &uip_buf[UIP_LLH_LEN + 24];
   for(i = 0; i < 16; i += 2) {
     printf("%02x%02x", dest_addr_ptr[i], dest_addr_ptr[i+1]);
