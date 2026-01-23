@@ -31,7 +31,7 @@
 #define PROJECT_ROUTER_CONF_H_
 
 #undef UIP_FALLBACK_INTERFACE
-#define UIP_FALLBACK_INTERFACE rpl_interface
+#define UIP_FALLBACK_INTERFACE slip_interface
 
 #undef QUEUEBUF_CONF_NUM
 #define QUEUEBUF_CONF_NUM         4
