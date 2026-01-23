@@ -195,9 +195,11 @@ packet_input(void)
   if(uip_len > 0) {
 
 #if UIP_CONF_IP_FORWARD
+    // What the hell is this spaghetti mess?
     tcpip_is_forwarding = 1;
     if(uip_fw_forward() != UIP_FW_LOCAL) {
       tcpip_is_forwarding = 0;
+      printf("tcpip: packet_input; forwarded packet, returning early\n");
       return;
     }
     tcpip_is_forwarding = 0;
