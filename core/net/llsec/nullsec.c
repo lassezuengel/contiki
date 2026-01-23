@@ -57,6 +57,7 @@ init(void)
 static void
 send(mac_callback_t sent, void *ptr)
 {
+  printf("nullsec: sending packet\n");
   packetbuf_set_attr(PACKETBUF_ATTR_FRAME_TYPE, FRAME802154_DATAFRAME);
   NETSTACK_MAC.send(sent, ptr);
 }
