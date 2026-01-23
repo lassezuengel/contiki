@@ -535,6 +535,8 @@ tcpip_input(void)
 void
 tcpip_ipv6_output(void)
 {
+  printf("tcpip_ipv6_output called\n");
+
   uip_ds6_nbr_t *nbr = NULL;
   uip_ipaddr_t *nexthop = NULL;
 
@@ -543,13 +545,13 @@ tcpip_ipv6_output(void)
   }
 
   if(uip_len > UIP_LINK_MTU) {
-    UIP_LOG("tcpip_ipv6_output: Packet to big");
+    printf("tcpip_ipv6_output: Packet too big\n");
     uip_clear_buf();
     return;
   }
 
   if(uip_is_addr_unspecified(&UIP_IP_BUF->destipaddr)){
-    UIP_LOG("tcpip_ipv6_output: Destination address unspecified");
+    printf("tcpip_ipv6_output: Destination address unspecified\n");
     uip_clear_buf();
     return;
   }
@@ -557,7 +559,7 @@ tcpip_ipv6_output(void)
 #if UIP_CONF_IPV6_RPL
   if(!rpl_update_header()) {
     /* Packet can not be forwarded */
-    PRINTF("tcpip_ipv6_output: RPL header update error\n");
+    printf("tcpip_ipv6_output: RPL header update error\n");
     uip_clear_buf();
     return;
   }
@@ -590,11 +592,11 @@ tcpip_ipv6_output(void)
 
       /* No route was found - we send to the default route instead. */
       if(route == NULL) {
-        PRINTF("tcpip_ipv6_output: no route found, using default route\n");
+        printf("tcpip_ipv6_output: no route found, using default route\n");
         nexthop = uip_ds6_defrt_choose();
         if(nexthop == NULL) {
 #ifdef UIP_FALLBACK_INTERFACE
-          PRINTF("FALLBACK: removing ext hdrs & setting proto %d %d\n",
+          printf("FALLBACK: removing ext hdrs & setting proto %d %d\n",
               uip_ext_len, *((uint8_t *)UIP_IP_BUF + 40));
           if(uip_ext_len > 0) {
             extern void remove_ext_hdr(void);
@@ -607,14 +609,14 @@ tcpip_ipv6_output(void)
            * not informed routes might get lost unexpectedly until there's a need
            * to send a new packet to the peer */
           if(UIP_FALLBACK_INTERFACE.output() < 0) {
-            PRINTF("FALLBACK: output error. Reporting DST UNREACH\n");
+            printf("FALLBACK: output error. Reporting DST UNREACH\n");
             uip_icmp6_error_output(ICMP6_DST_UNREACH, ICMP6_DST_UNREACH_ADDR, 0);
             uip_flags = 0;
             tcpip_ipv6_output();
             return;
           }
 #else
-          PRINTF("tcpip_ipv6_output: Destination off-link but no route\n");
+          printf("tcpip_ipv6_output: Destination off-link but no route\n");
 #endif /* !UIP_FALLBACK_INTERFACE */
           uip_clear_buf();
           return;
