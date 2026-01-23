@@ -251,7 +251,7 @@ init(void)
 static int
 output(void)
 {
-  printf("TUN fallback output for destination: ");
+  printf("tun-bridge: TUN fallback output for destination: ");
   int i;
   uint8_t *dest_addr_ptr = &uip_buf[UIP_LLH_LEN + 24];
   for(i = 0; i < 16; i += 2) {
@@ -289,6 +289,8 @@ set_fd(fd_set *rset, fd_set *wset)
 static void
 handle_fd(fd_set *rset, fd_set *wset)
 {
+  printf("tun-bridge: handle_fd\n");
+
   /* Optional delay between outgoing packets */
   /* Base delay times number of 6lowpan fragments to be sent */
   /* delaymsec = 10; */
