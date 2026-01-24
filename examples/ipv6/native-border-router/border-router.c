@@ -306,10 +306,6 @@ set_prefix_64(const uip_ipaddr_t *prefix_64)
     PRINTF(" to ds6 prefix list\n");
   }
 
-  prefix_set = 1;
-  uip_ds6_set_addr_iid(&ipaddr, &uip_lladdr);
-  uip_ds6_addr_add(&ipaddr, 0, ADDR_AUTOCONF);
-
 #if BORDER_ROUTER_BRIDGE_MODE
   // Set the tun prefix for bridge mode. This tells the ip stack to
   // forward packets destined to this prefix to the tun interface,
@@ -326,6 +322,10 @@ set_prefix_64(const uip_ipaddr_t *prefix_64)
     PRINTF("created a new RPL dag\n");
   }
 #endif /* BORDER_ROUTER_BRIDGE_MODE */
+
+  prefix_set = 1;
+  uip_ds6_set_addr_iid(&ipaddr, &uip_lladdr);
+  uip_ds6_addr_add(&ipaddr, 0, ADDR_AUTOCONF);
 }
 /*---------------------------------------------------------------------------*/
 PROCESS_THREAD(border_router_process, ev, data)

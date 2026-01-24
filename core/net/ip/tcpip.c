@@ -610,6 +610,7 @@ tcpip_ipv6_output(void)
 
     PRINTF("tcpip_ipv6_output: Processing with target ip address ");
     uip_debug_ipaddr_print(&UIP_IP_BUF->destipaddr);
+    PRINTF("\n");
 
 #if BORDER_ROUTER_BRIDGE_MODE
     if (matches_tun_prefix(&UIP_IP_BUF->destipaddr)) {
