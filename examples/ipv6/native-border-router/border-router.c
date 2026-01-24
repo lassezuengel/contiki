@@ -297,9 +297,14 @@ set_prefix_64(const uip_ipaddr_t *prefix_64)
   memcpy(&ipaddr, prefix_64, 16);
 
   /* Manually add prefix to the DS6 prefix list for on-link determination */
-  // if(uip_ds6_prefix_add(&prefix, 64, 0, 0, 0, 0) == NULL) {
-  //   PRINTF("ERROR: Failed to add prefix to ds6 list\n");
-  // }
+  if(!uip_ds6_prefix_add(&ipaddr, UIP_DEFAULT_PREFIX_LEN, 0, 0, 0, 0)) {
+    fprintf(stderr,"uip_ds6_prefix_add() failed.\n");
+    exit(EXIT_FAILURE);
+  } else {
+    PRINTF("Added prefix ");
+    PRINT6ADDR(&ipaddr);
+    PRINTF(" to ds6 prefix list\n");
+  }
 
   prefix_set = 1;
   uip_ds6_set_addr_iid(&ipaddr, &uip_lladdr);
@@ -346,6 +351,8 @@ PROCESS_THREAD(border_router_process, ev, data)
       PRINTF("Parse error: %s\n", slip_config_ipaddr);
       exit(0);
     }
+  } else {
+    PRINTF("***** No prefix specified!\n");
   }
 
   /************************************************************/
