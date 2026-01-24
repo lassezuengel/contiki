@@ -43,6 +43,7 @@
 #include "contiki-net.h"
 #include "net/ip/uip.h"
 #include "net/ipv6/uip-ds6.h"
+#include "net/ipv6/uip-ds6-route.h"
 #include "net/rpl/rpl.h"
 
 #include "net/netstack.h"
@@ -305,6 +306,12 @@ set_prefix_64(const uip_ipaddr_t *prefix_64)
     PRINT6ADDR(&ipaddr);
     PRINTF(" to ds6 prefix list\n");
   }
+
+  uip_ds6_route_t *route;
+  uip_ipaddr_t default_route;
+
+  uip_create_unspecified(&default_route);
+  route = uip_ds6_route_add(&default_route, 0, &ipaddr);
 
   prefix_set = 1;
   uip_ds6_set_addr_iid(&ipaddr, &uip_lladdr);
