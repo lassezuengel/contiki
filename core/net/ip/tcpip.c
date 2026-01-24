@@ -559,6 +559,9 @@ uip_ip6addr_t tun_prefix;
 
 void tcpip_set_tun_prefix(const uip_ip6addr_t *addr)
 {
+  PRINTF("tcpip - setting tun prefix to ");
+  uip_debug_ipaddr_print(addr);
+  PRINTF("\n");
   memcpy(&tun_prefix, addr, sizeof(uip_ip6addr_t));
 }
 
@@ -607,7 +610,6 @@ tcpip_ipv6_output(void)
 
     PRINTF("tcpip_ipv6_output: Processing with target ip address ");
     uip_debug_ipaddr_print(&UIP_IP_BUF->destipaddr);
-    PRINTF("\n with \n");
 
 #if BORDER_ROUTER_BRIDGE_MODE
     if (matches_tun_prefix(&UIP_IP_BUF->destipaddr)) {
