@@ -568,6 +568,18 @@ tcpip_ipv6_output(void)
   if(!uip_is_addr_mcast(&UIP_IP_BUF->destipaddr)) {
     /* Next hop determination */
 
+    printf("Processing with target ip address ");
+    uip_debug_ipaddr_print(&UIP_IP_BUF->destipaddr);
+    printf("\n");
+
+    if (UIP_IP_BUF->destipaddr.u16[7] == 0x1234) {
+      printf("tcpip_ipv6_output: Special case for 0x1234, forwarding to SLIP\n");
+      // For SLIP/TUN bridge, just send it out
+      tcpip_output(NULL);
+      uip_clear_buf();
+      return;
+    }
+
 #if UIP_CONF_IPV6_RPL && RPL_WITH_NON_STORING
     uip_ipaddr_t ipaddr;
     /* Look for a RPL Source Route */
