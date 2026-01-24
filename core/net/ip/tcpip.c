@@ -572,11 +572,11 @@ tcpip_ipv6_output(void)
     uip_debug_ipaddr_print(&UIP_IP_BUF->destipaddr);
     printf("\n with \n");
 
-    for(size_t i = 0; i < 7; i++) {
+    for(size_t i = 0; i < 8; i++) {
       printf("  uip_ip_buf->destipaddr.u16[%u] = 0x%04x\n", i, UIP_IP_BUF->destipaddr.u16[i]);
     }
 
-    if (UIP_IP_BUF->destipaddr.u16[7] == 0x0001) {
+    if (UIP_IP_BUF->destipaddr.u16[7] == 0x1000) {
       printf("tcpip_ipv6_output: Special case for 0x0001, forwarding to tun0 (FALLBACK)\n");
       printf("FALLBACK: removing ext hdrs & setting proto %d %d\n",
           uip_ext_len, *((uint8_t *)UIP_IP_BUF + 40));
