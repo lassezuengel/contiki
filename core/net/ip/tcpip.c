@@ -570,7 +570,11 @@ tcpip_ipv6_output(void)
 
     printf("Processing with target ip address ");
     uip_debug_ipaddr_print(&UIP_IP_BUF->destipaddr);
-    printf("\n");
+    printf("\n with \n");
+
+    for(size_t i = 0; i < 7; i++) {
+      printf("  uip_ip_buf->destipaddr.u16[%u] = 0x%04x\n", i, UIP_IP_BUF->destipaddr.u16[i]);
+    }
 
     if (UIP_IP_BUF->destipaddr.u16[7] == 0x0001) {
       printf("tcpip_ipv6_output: Special case for 0x0001, forwarding to tun0 (FALLBACK)\n");
