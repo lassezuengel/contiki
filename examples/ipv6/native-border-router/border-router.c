@@ -237,7 +237,7 @@ print_local_addresses(void)
 static void
 request_mac(void)
 {
-  printf("Requesting MAC address from slip-radio\n");
+  PRINTF("Requesting MAC address from slip-radio\n");
   write_to_slip((uint8_t *)"?M", 2);
 }
 /*---------------------------------------------------------------------------*/
@@ -260,8 +260,8 @@ border_router_set_mac(const uint8_t *data)
 void
 border_router_print_stat()
 {
-  printf("bytes received over SLIP: %ld\n", slip_received);
-  printf("bytes sent over SLIP: %ld\n", slip_sent);
+  PRINTF("bytes received over SLIP: %ld\n", slip_received);
+  PRINTF("bytes sent over SLIP: %ld\n", slip_sent);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -358,35 +358,35 @@ PROCESS_THREAD(border_router_process, ev, data)
     uip_ds6_nbr_t *nbr;
     uip_ds6_route_t *r;
 
-    printf("\n--- CURRENT ROUTING STATE ---\n");
+    PRINTF("\n--- CURRENT ROUTING STATE ---\n");
 
-    printf("Prefixes:\n");
+    PRINTF("Prefixes:\n");
     /* Corrected: uip_ds6_prefix_list is an array, not a function */
     for(p = uip_ds6_prefix_list; p < uip_ds6_prefix_list + UIP_DS6_PREFIX_NB; p++) {
       if(p->isused) {
-        printf("  - ");
+        PRINTF("  - ");
         uip_debug_ipaddr_print(&p->ipaddr);
-        printf("/%d\n", p->length);
+        PRINTF("/%d\n", p->length);
       }
     }
 
-    printf("Neighbors:\n");
+    PRINTF("Neighbors:\n");
     /* Corrected: Use the nbr_table API as shown in the webserver code */
     for(nbr = nbr_table_head(ds6_neighbors); nbr != NULL; nbr = nbr_table_next(ds6_neighbors, nbr)) {
-        printf("  - ");
+        PRINTF("  - ");
         uip_debug_ipaddr_print(&nbr->ipaddr);
-        printf(" (state: %d)\n", nbr->state);
+        PRINTF(" (state: %d)\n", nbr->state);
     }
 
-    printf("Routes:\n");
+    PRINTF("Routes:\n");
     for(r = uip_ds6_route_head(); r != NULL; r = uip_ds6_route_next(r)) {
-        printf("  - ");
+        PRINTF("  - ");
         uip_debug_ipaddr_print(&r->ipaddr);
-        printf("/%u via ", r->length);
+        PRINTF("/%u via ", r->length);
         uip_debug_ipaddr_print(uip_ds6_route_nexthop(r));
-        printf("\n");
+        PRINTF("\n");
     }
-    printf("---------------------------\n\n");
+    PRINTF("---------------------------\n\n");
   }
   /*******************************************************************/
 

@@ -67,7 +67,7 @@ border_router_cmd_handler(const uint8_t *data, int len)
     PRINTF("Got configuration message of type %c\n", data[1]);
     if(data[1] == 'G' && command_context == CMD_CONTEXT_STDIO) {
       /* This is supposed to be from stdin */
-      printf("Performing Global Repair...\n");
+      PRINTF("Performing Global Repair...\n");
       rpl_repair_root(RPL_DEFAULT_INSTANCE);
       return 1;
     } else if(data[1] == 'M' && command_context == CMD_CONTEXT_RADIO) {
@@ -77,7 +77,7 @@ border_router_cmd_handler(const uint8_t *data, int len)
       return 1;
     } else if(data[1] == 'C' && command_context == CMD_CONTEXT_RADIO) {
       /* We need to know that this is from the slip-radio here. */
-      printf("Channel is:%d\n", data[2]);
+      PRINTF("Channel is:%d\n", data[2]);
       return 1;
     } else if(data[1] == 'R' && command_context == CMD_CONTEXT_RADIO) {
       /* We need to know that this is from the slip-radio here. */
@@ -108,7 +108,7 @@ border_router_cmd_handler(const uint8_t *data, int len)
       return 1;
     } else if(data[1] == 'C' && command_context == CMD_CONTEXT_STDIO) {
       /* send on! */
-      printf("Slipping ?C\n");
+      PRINTF("Slipping ?C\n");
       write_to_slip(data, len);
       return 1;
     } else if(data[1] == 'S') {
@@ -123,11 +123,11 @@ void
 border_router_cmd_output(const uint8_t *data, int data_len)
 {
   int i;
-  printf("CMD output: ");
+  PRINTF("CMD output: ");
   for(i = 0; i < data_len; i++) {
-    printf("%c", data[i]);
+    PRINTF("%c", data[i]);
   }
-  printf("\n");
+  PRINTF("\n");
 }
 /*---------------------------------------------------------------------------*/
 PROCESS_THREAD(border_router_cmd_process, ev, data)

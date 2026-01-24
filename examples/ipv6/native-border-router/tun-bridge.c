@@ -211,7 +211,7 @@ tun_init()
 
   select_set_callback(tunfd, &tun_select_callback);
 
-  fprintf(stderr, "opened %s device ``/dev/%s''\n",
+  PRINTF("opened %s device ``/dev/%s''\n",
           "tun", slip_config_tundev);
 
   atexit(cleanup);
@@ -225,7 +225,7 @@ tun_init()
 static int
 tun_output(uint8_t *data, int len)
 {
-  fprintf(stderr, "*** Writing to tun...%d\n", len);
+  PRINTF("*** Writing to tun...%d\n", len);
   if(write(tunfd, data, len) != len) {
     err(1, "serial_to_tun: write");
     return -1;
@@ -251,16 +251,16 @@ init(void)
 static int
 output(void)
 {
-  printf("tun-bridge: TUN fallback output for destination: ");
+  PRINTF("tun-bridge: TUN fallback output for destination: ");
   int i;
   uint8_t *dest_addr_ptr = &uip_buf[UIP_LLH_LEN + 24];
   for(i = 0; i < 16; i += 2) {
-    printf("%02x%02x", dest_addr_ptr[i], dest_addr_ptr[i+1]);
+    PRINTF("%02x%02x", dest_addr_ptr[i], dest_addr_ptr[i+1]);
     if (i < 14) {
-      printf(":");
+      PRINTF(":");
     }
   }
-  printf("\n");
+  PRINTF("\n");
 
   PRINTF("SUT: %u\n", uip_len);
   if(uip_len > 0) {
@@ -289,7 +289,7 @@ set_fd(fd_set *rset, fd_set *wset)
 static void
 handle_fd(fd_set *rset, fd_set *wset)
 {
-  printf("tun-bridge: handle_fd\n");
+  PRINTF("tun-bridge: handle_fd\n");
 
   /* Optional delay between outgoing packets */
   /* Base delay times number of 6lowpan fragments to be sent */
