@@ -437,9 +437,9 @@ eventhandler(process_event_t ev, process_data_t data)
           tcpip_ipv6_output();
 #else
           if(uip_len > 0) {
-            PRINTF("tcpip_output from periodic len %d\n", uip_len);
+            printf("tcpip_output from periodic len %d\n", uip_len);
             tcpip_output();
-            PRINTF("tcpip_output after periodic len %d\n", uip_len);
+            printf("tcpip_output after periodic len %d\n", uip_len);
           }
 #endif /* NETSTACK_CONF_WITH_IPV6 */
         }
@@ -494,7 +494,7 @@ eventhandler(process_event_t ev, process_data_t data)
       tcpip_ipv6_output();
 #else /* NETSTACK_CONF_WITH_IPV6 */
       if(uip_len > 0) {
-        PRINTF("tcpip_output from tcp poll len %d\n", uip_len);
+        printf("tcpip_output from tcp poll len %d\n", uip_len);
         tcpip_output();
       }
 #endif /* NETSTACK_CONF_WITH_IPV6 */
@@ -673,7 +673,7 @@ tcpip_ipv6_output(void)
 #if UIP_ND6_SEND_NS
       if((nbr = uip_ds6_nbr_add(nexthop, NULL, 0, NBR_INCOMPLETE, NBR_TABLE_REASON_IPV6_ND, NULL)) == NULL) {
         uip_clear_buf();
-        PRINTF("tcpip_ipv6_output: failed to add neighbor to cache\n");
+        printf("tcpip_ipv6_output: failed to add neighbor to cache\n");
         return;
       } else {
 #if UIP_CONF_IPV6_QUEUE_PKT
@@ -700,14 +700,14 @@ tcpip_ipv6_output(void)
         /* Send the first NS try from here (multicast destination IP address). */
       }
 #else /* UIP_ND6_SEND_NS */
-      PRINTF("tcpip_ipv6_output: neighbor not in cache\n");
+      printf("tcpip_ipv6_output: neighbor not in cache\n");
       uip_len = 0;
       return;
 #endif /* UIP_ND6_SEND_NS */
     } else {
 #if UIP_ND6_SEND_NS
       if(nbr->state == NBR_INCOMPLETE) {
-        PRINTF("tcpip_ipv6_output: nbr cache entry incomplete\n");
+        printf("tcpip_ipv6_output: nbr cache entry incomplete\n");
 #if UIP_CONF_IPV6_QUEUE_PKT
         /* Copy outgoing pkt in the queuing buffer for later transmit and set
            the destination nbr to nbr. */
@@ -725,7 +725,7 @@ tcpip_ipv6_output(void)
         nbr->state = NBR_DELAY;
         stimer_set(&nbr->reachable, UIP_ND6_DELAY_FIRST_PROBE_TIME);
         nbr->nscount = 0;
-        PRINTF("tcpip_ipv6_output: nbr cache entry stale moving to delay\n");
+        printf("tcpip_ipv6_output: nbr cache entry stale moving to delay\n");
       }
 #endif /* UIP_ND6_SEND_NS */
 
