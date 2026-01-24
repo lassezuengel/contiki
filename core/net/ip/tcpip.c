@@ -700,8 +700,10 @@ tcpip_ipv6_output(void)
         /* Send the first NS try from here (multicast destination IP address). */
       }
 #else /* UIP_ND6_SEND_NS */
-      printf("tcpip_ipv6_output: neighbor not in cache\n");
-      uip_len = 0;
+      printf("tcpip_ipv6_output: neighbor not in cache, forwarding to SLIP\n");
+      // For SLIP/TUN bridge, just send it out
+      tcpip_output(NULL);
+      uip_clear_buf();
       return;
 #endif /* UIP_ND6_SEND_NS */
     } else {

@@ -292,12 +292,10 @@ border_router_set_sensors(const char *data, int len)
 static void
 set_prefix_64(const uip_ipaddr_t *prefix_64)
 {
-  rpl_dag_t *dag;
   uip_ipaddr_t ipaddr;
   memcpy(&prefix, prefix_64, 16);
   memcpy(&ipaddr, prefix_64, 16);
 
-  /* Manually add prefix to the DS6 prefix list for on-link determination */
   if(!uip_ds6_prefix_add(&ipaddr, UIP_DEFAULT_PREFIX_LEN, 0, 0, 0, 0)) {
     fprintf(stderr,"uip_ds6_prefix_add() failed.\n");
     exit(EXIT_FAILURE);
@@ -307,21 +305,11 @@ set_prefix_64(const uip_ipaddr_t *prefix_64)
     PRINTF(" to ds6 prefix list\n");
   }
 
-  uip_ds6_route_t *route;
-  uip_ipaddr_t default_route;
-
-  uip_create_unspecified(&default_route);
-  route = uip_ds6_route_add(&default_route, 0, &ipaddr);
-
   prefix_set = 1;
   uip_ds6_set_addr_iid(&ipaddr, &uip_lladdr);
   uip_ds6_addr_add(&ipaddr, 0, ADDR_AUTOCONF);
 
-  dag = rpl_set_root(RPL_DEFAULT_INSTANCE, &ipaddr);
-  if(dag != NULL) {
-    rpl_set_prefix(dag, &prefix, 64);
-    PRINTF("created a new RPL dag\n");
-  }
+  // Don't initialize RPL if not using it
 }
 /*---------------------------------------------------------------------------*/
 PROCESS_THREAD(border_router_process, ev, data)
