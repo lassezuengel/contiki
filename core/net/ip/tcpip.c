@@ -576,7 +576,7 @@ tcpip_ipv6_output(void)
       printf("  uip_ip_buf->destipaddr.u16[%u] = 0x%04x\n", i, UIP_IP_BUF->destipaddr.u16[i]);
     }
 
-    if (UIP_IP_BUF->destipaddr.u16[7] == 0x1000) {
+    if (UIP_IP_BUF->destipaddr.u16[7] == 0x0100) {
       printf("tcpip_ipv6_output: Special case for 0x0001, forwarding to tun0 (FALLBACK)\n");
       printf("FALLBACK: removing ext hdrs & setting proto %d %d\n",
           uip_ext_len, *((uint8_t *)UIP_IP_BUF + 40));
