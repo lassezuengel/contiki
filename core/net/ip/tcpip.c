@@ -572,10 +572,27 @@ tcpip_ipv6_output(void)
     uip_debug_ipaddr_print(&UIP_IP_BUF->destipaddr);
     printf("\n");
 
-    if (UIP_IP_BUF->destipaddr.u16[7] == 0x1234) {
-      printf("tcpip_ipv6_output: Special case for 0x1234, forwarding to SLIP\n");
-      // For SLIP/TUN bridge, just send it out
-      tcpip_output(NULL);
+    if (UIP_IP_BUF->destipaddr.u16[7] == 0x0001) {
+      printf("tcpip_ipv6_output: Special case for 0x0001, forwarding to tun0 (FALLBACK)\n");
+      printf("FALLBACK: removing ext hdrs & setting proto %d %d\n",
+          uip_ext_len, *((uint8_t *)UIP_IP_BUF + 40));
+      if(uip_ext_len > 0) {
+        extern void remove_ext_hdr(void);
+        uint8_t proto = *((uint8_t *)UIP_IP_BUF + 40);
+        remove_ext_hdr();
+        /* This should be copied from the ext header... */
+        UIP_IP_BUF->proto = proto;
+      }
+      /* Inform the other end that the destination is not reachable. If it's
+        * not informed routes might get lost unexpectedly until there's a need
+        * to send a new packet to the peer */
+      if(UIP_FALLBACK_INTERFACE.output() < 0) {
+        printf("FALLBACK: output error. Reporting DST UNREACH\n");
+        uip_icmp6_error_output(ICMP6_DST_UNREACH, ICMP6_DST_UNREACH_ADDR, 0);
+        uip_flags = 0;
+        tcpip_ipv6_output();
+        return;
+      }
       uip_clear_buf();
       return;
     }
