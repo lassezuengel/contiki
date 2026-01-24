@@ -275,7 +275,7 @@ struct uip_udp_conn *udp_broadcast_new(uint16_t port, void *appstate);
 CCIF void tcpip_poll_udp(struct uip_udp_conn *conn);
 
 /** @} */
- 
+
 /**
  * \name ICMPv6 functions
  * @{
@@ -365,6 +365,20 @@ extern unsigned char tcpip_do_forwarding;
  */
 extern unsigned char tcpip_is_forwarding;
 
+#if BORDER_ROUTER_BRIDGE_MODE
+extern uip_ip6addr_t tun_prefix;
+
+/**
+ * \brief Sets the tun prefix used to identify packets to be
+ * forwarded to the tun interface.
+ */
+void tcpip_set_tun_prefix(const uip_ip6addr_t *addr);
+
+/**
+ * \brief Returns whether the given address matches the tun prefix.
+ */
+int matches_tun_prefix(const uip_ip6addr_t *addr);
+#endif
 
 #define tcpip_set_forwarding(forwarding) tcpip_do_forwarding = (forwarding)
 

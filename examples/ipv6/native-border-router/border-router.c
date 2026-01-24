@@ -44,6 +44,7 @@
 #include "net/ip/uip.h"
 #include "net/ipv6/uip-ds6.h"
 #include "net/ipv6/uip-ds6-route.h"
+#include "net/ip/tcpip.h"
 #include "net/rpl/rpl.h"
 
 #include "net/netstack.h"
@@ -309,7 +310,22 @@ set_prefix_64(const uip_ipaddr_t *prefix_64)
   uip_ds6_set_addr_iid(&ipaddr, &uip_lladdr);
   uip_ds6_addr_add(&ipaddr, 0, ADDR_AUTOCONF);
 
-  // Don't initialize RPL if not using it
+#if BORDER_ROUTER_BRIDGE_MODE
+  // Set the tun prefix for bridge mode. This tells the ip stack to
+  // forward packets destined to this prefix to the tun interface,
+  // not the slip interface.
+  //
+  // All this is needed because we do not use RPL, and no routes are
+  // actually discovered. We just want to forward everything between
+  // the two interfaces.
+  tcpip_set_tun_prefix(&ipaddr);
+#else
+  rpl_dag_t *dag = rpl_set_root(RPL_DEFAULT_INSTANCE, &ipaddr);
+  if(dag != NULL) {
+    rpl_set_prefix(dag, &prefix, 64);
+    PRINTF("created a new RPL dag\n");
+  }
+#endif /* BORDER_ROUTER_BRIDGE_MODE */
 }
 /*---------------------------------------------------------------------------*/
 PROCESS_THREAD(border_router_process, ev, data)
@@ -353,7 +369,7 @@ PROCESS_THREAD(border_router_process, ev, data)
   /************************************************************/
   /* DEBUG: Print internal routing state after initialization */
   /************************************************************/
-  {
+  /*{
     uip_ds6_prefix_t *p;
     uip_ds6_nbr_t *nbr;
     uip_ds6_route_t *r;
@@ -361,7 +377,6 @@ PROCESS_THREAD(border_router_process, ev, data)
     PRINTF("\n--- CURRENT ROUTING STATE ---\n");
 
     PRINTF("Prefixes:\n");
-    /* Corrected: uip_ds6_prefix_list is an array, not a function */
     for(p = uip_ds6_prefix_list; p < uip_ds6_prefix_list + UIP_DS6_PREFIX_NB; p++) {
       if(p->isused) {
         PRINTF("  - ");
@@ -371,7 +386,6 @@ PROCESS_THREAD(border_router_process, ev, data)
     }
 
     PRINTF("Neighbors:\n");
-    /* Corrected: Use the nbr_table API as shown in the webserver code */
     for(nbr = nbr_table_head(ds6_neighbors); nbr != NULL; nbr = nbr_table_next(ds6_neighbors, nbr)) {
         PRINTF("  - ");
         uip_debug_ipaddr_print(&nbr->ipaddr);
@@ -387,7 +401,7 @@ PROCESS_THREAD(border_router_process, ev, data)
         PRINTF("\n");
     }
     PRINTF("---------------------------\n\n");
-  }
+  }*/
   /*******************************************************************/
 
 #if DEBUG

@@ -54,6 +54,13 @@
 #undef NETSTACK_CONF_RDC
 #define NETSTACK_CONF_RDC border_router_rdc_driver
 
+/*
+ * Enable bridge mode in the border router. In bridge mode, the border
+ * router forwards all packets between the slip interface and the
+ * tun interface.
+ */
+#define BORDER_ROUTER_BRIDGE_MODE 1
+
 /* used by wpcap (see /cpu/native/net/wpcap-drv.c) */
 #define SELECT_CALLBACK 1
 

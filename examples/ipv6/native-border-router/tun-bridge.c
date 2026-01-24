@@ -51,7 +51,7 @@
 #include <sys/socket.h>
 
 
-#define DEBUG DEBUG_FULL
+#define DEBUG DEBUG_NONE
 #include "net/ip/uip-debug.h"
 
 #ifdef linux

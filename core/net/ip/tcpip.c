@@ -54,7 +54,7 @@
 
 #include <string.h>
 
-#define DEBUG DEBUG_ALL
+#define DEBUG DEBUG_FULL
 #include "net/ip/uip-debug.h"
 
 #if UIP_LOGGING
@@ -531,6 +531,43 @@ tcpip_input(void)
   uip_clear_buf();
 }
 /*---------------------------------------------------------------------------*/
+void
+handle_fallback(void)
+{
+  PRINTF("FALLBACK: removing ext hdrs & setting proto %d %d\n",
+          uip_ext_len, *((uint8_t *)UIP_IP_BUF + 40));
+  if(uip_ext_len > 0) {
+    extern void remove_ext_hdr(void);
+    uint8_t proto = *((uint8_t *)UIP_IP_BUF + 40);
+    remove_ext_hdr();
+    /* This should be copied from the ext header... */
+    UIP_IP_BUF->proto = proto;
+  }
+  /* Inform the other end that the destination is not reachable. If it's
+    * not informed routes might get lost unexpectedly until there's a need
+    * to send a new packet to the peer */
+  if(UIP_FALLBACK_INTERFACE.output() < 0) {
+    PRINTF("FALLBACK: output error. Reporting DST UNREACH\n");
+    uip_icmp6_error_output(ICMP6_DST_UNREACH, ICMP6_DST_UNREACH_ADDR, 0);
+    uip_flags = 0;
+    tcpip_ipv6_output();
+  }
+}
+/*---------------------------------------------------------------------------*/
+#if BORDER_ROUTER_BRIDGE_MODE
+uip_ip6addr_t tun_prefix;
+
+void tcpip_set_tun_prefix(const uip_ip6addr_t *addr)
+{
+  memcpy(&tun_prefix, addr, sizeof(uip_ip6addr_t));
+}
+
+int matches_tun_prefix(const uip_ip6addr_t *addr)
+{
+  return uip_ip6addr_cmp(addr, &tun_prefix);
+}
+#endif
+/*---------------------------------------------------------------------------*/
 #if NETSTACK_CONF_WITH_IPV6
 void
 tcpip_ipv6_output(void)
@@ -568,38 +605,22 @@ tcpip_ipv6_output(void)
   if(!uip_is_addr_mcast(&UIP_IP_BUF->destipaddr)) {
     /* Next hop determination */
 
-    PRINTF("Processing with target ip address ");
+    PRINTF("tcpip_ipv6_output: Processing with target ip address ");
     uip_debug_ipaddr_print(&UIP_IP_BUF->destipaddr);
     PRINTF("\n with \n");
 
-    for(size_t i = 0; i < 8; i++) {
-      PRINTF("  uip_ip_buf->destipaddr.u16[%u] = 0x%04x\n", i, UIP_IP_BUF->destipaddr.u16[i]);
-    }
-
-    if (UIP_IP_BUF->destipaddr.u16[7] == 0x0100) {
-      PRINTF("tcpip_ipv6_output: Special case for 0x0001, forwarding to tun0 (FALLBACK)\n");
-      PRINTF("FALLBACK: removing ext hdrs & setting proto %d %d\n",
-          uip_ext_len, *((uint8_t *)UIP_IP_BUF + 40));
-      if(uip_ext_len > 0) {
-        extern void remove_ext_hdr(void);
-        uint8_t proto = *((uint8_t *)UIP_IP_BUF + 40);
-        remove_ext_hdr();
-        /* This should be copied from the ext header... */
-        UIP_IP_BUF->proto = proto;
-      }
-      /* Inform the other end that the destination is not reachable. If it's
-        * not informed routes might get lost unexpectedly until there's a need
-        * to send a new packet to the peer */
-      if(UIP_FALLBACK_INTERFACE.output() < 0) {
-        PRINTF("FALLBACK: output error. Reporting DST UNREACH\n");
-        uip_icmp6_error_output(ICMP6_DST_UNREACH, ICMP6_DST_UNREACH_ADDR, 0);
-        uip_flags = 0;
-        tcpip_ipv6_output();
-        return;
-      }
-      uip_clear_buf();
+#if BORDER_ROUTER_BRIDGE_MODE
+    if (matches_tun_prefix(&UIP_IP_BUF->destipaddr)) {
+ #ifdef UIP_FALLBACK_INTERFACE
+      PRINTF("tcpip_ipv6_output: Received input to tun interface, forwarding to tun0 (FALLBACK)\n");
+      handle_fallback();
+ #else
+      PRINTF("tcpip_ipv6_output: Received input to tun interface, but no FALLBACK defined!\n");
+      PRINTF("                   The tun interface is probably not set up correctly.\n");
+ #endif
       return;
     }
+#endif /* BORDER_ROUTER_BRIDGE_MODE */
 
 #if UIP_CONF_IPV6_RPL && RPL_WITH_NON_STORING
     uip_ipaddr_t ipaddr;
@@ -629,25 +650,8 @@ tcpip_ipv6_output(void)
         nexthop = uip_ds6_defrt_choose();
         if(nexthop == NULL) {
 #ifdef UIP_FALLBACK_INTERFACE
-          PRINTF("FALLBACK: removing ext hdrs & setting proto %d %d\n",
-              uip_ext_len, *((uint8_t *)UIP_IP_BUF + 40));
-          if(uip_ext_len > 0) {
-            extern void remove_ext_hdr(void);
-            uint8_t proto = *((uint8_t *)UIP_IP_BUF + 40);
-            remove_ext_hdr();
-            /* This should be copied from the ext header... */
-            UIP_IP_BUF->proto = proto;
-          }
-          /* Inform the other end that the destination is not reachable. If it's
-           * not informed routes might get lost unexpectedly until there's a need
-           * to send a new packet to the peer */
-          if(UIP_FALLBACK_INTERFACE.output() < 0) {
-            PRINTF("FALLBACK: output error. Reporting DST UNREACH\n");
-            uip_icmp6_error_output(ICMP6_DST_UNREACH, ICMP6_DST_UNREACH_ADDR, 0);
-            uip_flags = 0;
-            tcpip_ipv6_output();
-            return;
-          }
+          handle_fallback();
+          return;
 #else
           PRINTF("tcpip_ipv6_output: Destination off-link but no route\n");
 #endif /* !UIP_FALLBACK_INTERFACE */
@@ -733,10 +737,15 @@ tcpip_ipv6_output(void)
         /* Send the first NS try from here (multicast destination IP address). */
       }
 #else /* UIP_ND6_SEND_NS */
+ #if BORDER_ROUTER_BRIDGE_MODE
       PRINTF("tcpip_ipv6_output: neighbor not in cache, forwarding to SLIP\n");
       // For SLIP/TUN bridge, just send it out
       tcpip_output(NULL);
       uip_clear_buf();
+ #else
+      PRINTF("tcpip_ipv6_output: neighbor not in cache, dropping packet\n");
+      uip_len = 0;
+ #endif /* BORDER_ROUTER_BRIDGE_MODE */
       return;
 #endif /* UIP_ND6_SEND_NS */
     } else {
