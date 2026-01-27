@@ -622,6 +622,10 @@ tcpip_ipv6_output(void)
       PRINTF("                   The tun interface is probably not set up correctly.\n");
  #endif
       return;
+    } else if(!matches_tun_prefix(&UIP_IP_BUF->srcipaddr)) {
+      PRINTF("tcpip_ipv6_output: Not for me! Dropping packet.\n");
+      uip_clear_buf();
+      return;
     }
 #endif /* BORDER_ROUTER_BRIDGE_MODE */
 
